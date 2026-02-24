@@ -128,45 +128,5 @@ create table if not exists hardware (
 );
 
 
--- create or replace function enforce_laptop_type()
---     returns trigger as $$
--- begin
---     if not exists (
---         select 1 from assets
---         where id = new.asset_id
---           and type = 'laptop'
---     ) then
---         raise exception 'Asset type mismatch: not a laptop';
---     end if;
---
---     return new;
--- end;
--- $$ language plpgsql;
---
--- create trigger trg_laptop_type_check
---     before insert or update on laptop
---     for each row
--- execute function enforce_laptop_type();
-
-
-create or replace function enforce_asset_type()
-    returns trigger as $$
-declare
-    expected asset_type := TG_ARGV[0]::asset_type;
-begin
-    if not exists (
-        select 1 from assets where id = new.asset_id and type = expected
-    ) then
-        raise exception 'Asset type mismatch: expected %', expected;
-    end if;
-    return new;
-end;
-$$ language plpgsql;
-
-create trigger trg_mouse_type_check before insert or update on mouse
-    for each row execute function enforce_asset_type('mouse');
-
-create trigger trg_keyboard_type_check before insert or update on keyboard
-    for each row execute function enforce_asset_type('keyboard');
 
 commit;

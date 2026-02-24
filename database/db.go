@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	storex *sqlx.DB
+	DB *sqlx.DB
 )
 
 type SSLMode string
@@ -22,7 +22,8 @@ const (
 
 func ConnectAndMigrate(host, port, databaseName, user, password string, sslMode SSLMode) error {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, databaseName, sslMode)
-	DB, err := sqlx.Open("postgres", connStr)
+	var err error
+	DB, err = sqlx.Open("postgres", connStr)
 
 	if err != nil {
 		return err
@@ -33,13 +34,13 @@ func ConnectAndMigrate(host, port, databaseName, user, password string, sslMode 
 		return err
 	}
 
-	storex = DB
+	DB = DB
 
 	return migrateUp(DB)
 }
 
 func ShutdownDatabase() error {
-	return storex.Close()
+	return DB.Close()
 }
 
 func migrateUp(db *sqlx.DB) error {
@@ -62,7 +63,7 @@ func migrateUp(db *sqlx.DB) error {
 }
 
 func Tx(fn func(tx *sqlx.Tx) error) (err error) {
-	tx, err := storex.Beginx()
+	tx, err := DB.Beginx()
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
