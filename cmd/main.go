@@ -22,7 +22,7 @@ func main() {
 		database.SSLModeDisable,
 	)
 
-	// trasncation , storex -> utils ,
+	// history dashboard logout return assest  -- api , enum in go ,
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -30,23 +30,26 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Post("/register", handler.RegisterUser)
-	r.Post("/login", handler.LoginUser)
+	r.Post("/register", handler.RegisterUser) // workign correctly
+	r.Post("/login", handler.LoginUser)       // working
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
+		r.Post("/logout", handler.LogoutUser)  // working
 		r.Get("/assets", handler.DisplayAsset) // required p
 		r.Get("/assets/{id}", handler.GetAssetByID)
-		r.Get("/employees/{id}/assets", handler.ListAssetsByEmployee)
-		r.Post("/logout", handler.LogoutUser)
+		r.Get("/employees", handler.ListAssetsByEmployee) //working
 	})
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
 		r.Use(middleware.RoleMiddleware("admin"))
-		r.Post("/assets", handler.CreateAsset)
-		r.Post("/assets/assign", handler.AssignAsset)
-		r.Delete("/assets/{id}", handler.DeleteAsset)
+		r.Post("/register/employee", handler.CreateEmployee) //working
+		r.Post("/assets", handler.CreateAsset)               //working
+		r.Get("/assets/{id}", handler.ListAssetsByEmployeeAdmin)
+		r.Post("/assets/return/{id}", handler.ReturnAssest) // working
+		r.Post("/assets/assign", handler.AssignAsset)       // working
+		r.Delete("/assets/{id}", handler.DeleteAsset)       // working
 	})
 
 	log.Println("Server running on :8080")

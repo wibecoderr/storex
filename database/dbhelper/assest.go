@@ -2,7 +2,6 @@ package dbhelper
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/wibecoderr/storex/database"
@@ -17,16 +16,17 @@ AssignAsset(assetID, empID) // set emp_id + status = 'assigned' -- Done
 ReturnAsset(assetID)        // set emp_id = null + status = 'available'
 ArchiveAsset(id)            // soft delete
 */
-func CreateAsset(tx *sqlx.Tx, brand, model, serial, assetType, owner string, purchased time.Time, warrantyStart, warrantyEnd *time.Time, note *string) (string, error) {
+func CreateAsset(tx *sqlx.Tx, request model.CreateAssetRequest) (string, error) {
+
 	sql := `INSERT INTO assets (brand, model, serial_no, type, owner, purchased_at, warranty_start, warranty_end, note)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id`
 	var id string
-	err := tx.Get(&id, sql, brand, model, serial, assetType, owner, purchased, warrantyStart, warrantyEnd, note)
+	err := tx.Get(&id, sql, request.Brand, request.Model, request.Serial, request.Type, request.Owner, request.PurchasedAt, request.WarrantyStart, request.WarrantyEnd, request.Note)
 	return id, err
 }
 
-func CreateLaptop(tx *sqlx.Tx, assetID, processor, os, charger string, ram, storage int) error {
+func CreateLaptop(tx *sqlx.Tx, assetID, processor string, ram, storage int, os, charger string) error {
 	sql := `INSERT INTO laptop (asset_id, processor, ram, storage, os, charger)
             VALUES ($1, $2, $3, $4, $5, $6)`
 	_, err := tx.Exec(sql, assetID, processor, ram, storage, os, charger)
@@ -66,6 +66,8 @@ func GetAssetByID(id string) (model.AssetDetail, error) {
 		return details, err
 	}
 
+	// todo use making of const - remanin, omitempty -done
+
 	switch details.Asset.Type {
 	case "laptop":
 		var laptop model.Laptop
@@ -99,7 +101,7 @@ func ListAssets(limit, offset int) ([]model.DisplayAssetResponse, error) {
             LEFT JOIN employee e ON e.id = a.emp_id
             WHERE a.archived_at IS NULL
             ORDER BY a.type
-            and order by limit $1 offset $2`
+            LIMIT $1 OFFSET $2`
 	var devices []model.DisplayAssetResponse
 	err := database.DB.Select(&devices, sql, limit, offset)
 	return devices, err
@@ -107,40 +109,55 @@ func ListAssets(limit, offset int) ([]model.DisplayAssetResponse, error) {
 
 func AssignAsset(assetID, empID string) error {
 	return database.Tx(func(tx *sqlx.Tx) error {
-		// Need to check if device is assigned or not if assgined will make dummy rows inside rows
 
+		sql := `SELECT status FROM assets WHERE id = $1 AND archived_at IS NULL`
 		var status string
-		err := tx.Get(&status, `select status from assets where id= $1 `, assetID)
-		if status == "assigned" {
-			return fmt.Errorf("Asset %s already assigned to %s", assetID, empID)
-
+		err := tx.Get(&status, sql, assetID)
+		if err != nil {
+			return fmt.Errorf("asset not found or archived: %w", err)
 		}
-		// 1 update
-		_, err = tx.Exec(`UPDATE assets SET emp_id = $1, status = 'assigned' WHERE id = $2 AND archived_at IS NULL`, empID, assetID)
+		if status == "assigned" {
+			return fmt.Errorf("asset %s already assigned to %s", assetID, empID)
+		}
+
+		sql = `UPDATE assets SET emp_id = $1, status = 'assigned' WHERE id = $2 AND archived_at IS NULL`
+		_, err = tx.Exec(sql, empID, assetID)
 		if err != nil {
 			return err
 		}
 
-		// 2. insert history
-		_, err = tx.Exec(`INSERT INTO asset_history (type, asset_id, assigned_to, assigned_on) VALUES ('assigned', $1, $2, now())`, assetID, empID)
+		sql = `INSERT INTO asset_history (type, asset_id, assigned_to, assigned_on) VALUES ('assigned', $1, $2, now())`
+		_, err = tx.Exec(sql, assetID, empID)
 		return err
 	})
 }
+
 func ReturnAsset(assetID, note string) error {
 	return database.Tx(func(tx *sqlx.Tx) error {
 
-		_, err := tx.Exec(`UPDATE assets SET emp_id = NULL, status = 'available' WHERE id = $1 AND archived_at IS NULL`, assetID)
+		// check whom assigned
+		var empID string
+		err := tx.Get(&empID, `SELECT emp_id FROM assets WHERE id = $1 AND archived_at IS NULL AND status = 'assigned'`, assetID)
+		if err != nil {
+			return fmt.Errorf("asset not found or not currently assigned: %w", err)
+		}
+
+		_, err = tx.Exec(`UPDATE assets SET emp_id = NULL, status = 'available' WHERE id = $1 AND archived_at IS NULL`, assetID)
 		if err != nil {
 			return err
 		}
 
-		_, err = tx.Exec(`INSERT INTO asset_history (type, asset_id, returned_on, return_status) VALUES ('available', $1, now(), $2)`, assetID, note)
+		_, err = tx.Exec(`
+			INSERT INTO asset_history (type, asset_id, assigned_to, assigned_on, returned_on, return_status)
+			VALUES ('available', $1, $2, now(), now(), $3)`,
+			assetID, empID, note)
 		return err
 	})
 }
 
 func RemoveAsset(assetID string) error {
-	sql := `UPDATE assets SET archived_at = now() WHERE id = $1 AND archived_at IS NULL`
+	//  todo checked if remove only when procuct is not assigned
+	sql := `UPDATE assets SET archived_at = now() WHERE id = $1 AND archived_at IS NULL and status !='assigned'`
 	_, err := database.DB.Exec(sql, assetID)
 	return err
 }
@@ -151,4 +168,14 @@ func ListAssetsByEmployee(empID string) ([]model.Asset, int, error) {
 		return nil, 0, err
 	}
 	return assets, len(assets), nil
+}
+
+func CheckStatus(assestId string) bool {
+	sql := `select status from assets where id = $1 and   archived_at IS NULL`
+	var status string
+	err := database.DB.Get(&status, sql, assestId)
+	if err != nil {
+		return false
+	}
+	return status != "assigned"
 }

@@ -13,6 +13,31 @@ type Employee struct {
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }
+type Role string
+
+const (
+	RoleIntern     Role = "intern"
+	RoleEmployee   Role = "employee"
+	RoleManager    Role = "manager"
+	RoleFreelancer Role = "freelancer"
+)
+
+type Employee1Request struct {
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+	Role     string `json:"role" validate:"required"`
+	PhoneNo  string `json:"phone_no"`
+}
+
+func (r Role) Iscorrect() bool {
+	switch r {
+	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer:
+		return true
+
+	}
+	return false
+}
 
 type Getuser struct {
 	ID            string `db:"id"`
@@ -21,6 +46,7 @@ type Getuser struct {
 
 type Asset struct {
 	ID            string     `db:"id"`
+	EmpID         *string    `db:"emp_id"`
 	Brand         string     `db:"brand"`
 	Model         string     `db:"model"`
 	SerialNo      string     `db:"serial_no"`
@@ -79,7 +105,7 @@ type Error struct {
 	StatusCode int
 	Message    string
 }
-type Register struct {
+type RegisterRequest struct {
 	Name     string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
 	Role     string `json:"role"`
@@ -90,6 +116,15 @@ type Login struct {
 	Email    string `db:"email" validate:"required,email"`
 	Password string `db:"password_hash" validate:"required"`
 }
+type Device string
+
+const (
+	DeviceLaptop   Device = "laptop"
+	DeviceMouse    Device = "mouse"
+	DeviceKeyboard Device = "keyboard"
+	DeviceMobile   Device = "mobile"
+	DeviceHardware Device = "hardware"
+)
 
 type CreateAssetRequest struct {
 	Brand         string     `json:"brand" validate:"required"`
@@ -101,12 +136,22 @@ type CreateAssetRequest struct {
 	WarrantyStart *time.Time `json:"warranty_start"`
 	WarrantyEnd   *time.Time `json:"warranty_end"`
 	Note          *string    `json:"note"`
-	Laptop        *Laptop    `json:"laptop"`
-	Mouse         *Mouse     `json:"mouse"`
-	Keyboard      *Keyboard  `json:"keyboard"`
-	Mobile        *Mobile    `json:"mobile"`
-	Hardware      *Hardware  `json:"hardware"`
+	Laptop        *Laptop    `json:"laptop,omitempty"`
+	Mouse         *Mouse     `json:"mouse,omitempty"`
+	Keyboard      *Keyboard  `json:"keyboard,omitempty"`
+	Mobile        *Mobile    `json:"mobile,omitempty"`
+	Hardware      *Hardware  `json:"hardware,omitempty"`
 }
+
+func (d Device) Istype() bool {
+	switch d {
+	case DeviceKeyboard, DeviceLaptop, DeviceHardware, DeviceMouse, DeviceMobile:
+		return true
+	}
+	return false
+
+}
+
 type AssignAssetRequest struct {
 	AssetID string `json:"asset_id" validate:"required"`
 	EmpID   string `json:"emp_id" validate:"required"`
@@ -117,7 +162,7 @@ type DeleteAssetRequest struct {
 type DisplayRequest struct {
 	Model string `json:"model" validate:"required"`
 	TYpe  string `json:"type" validate:"required"`
-	empId string `json:"emp_id" validate:"required"`
+	EmpId string `json:"emp_id" validate:"required"`
 	owner string `json:"owner" validate:"required"`
 }
 type DisplayAssetResponse struct {
@@ -128,4 +173,13 @@ type DisplayAssetResponse struct {
 	Status   string  `db:"status" json:"status"`
 	EmpName  *string `db:"employee_name" json:"employee_name"`
 	EmpID    *string `db:"employee_id" json:"employee_id"`
+}
+type ReturnRequest struct {
+	EmpID          string    `db:"emp_id" json:"emp_id" validate:"required"`
+	Status         string    `db:"status" json:"satus"`
+	Type           string    `db:"type" json:"type"`
+	AssetId        string    `db:"asset_id" json:"asset_id"`
+	ReturnedOn     time.Time `db:"returned_on" json:"returned_on"`
+	ReturnedStatus string    `db:"returned_status" json:"returned_status"`
+	Note           string    `db:"note" json:"note"`
 }

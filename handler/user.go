@@ -12,7 +12,7 @@ import (
 )
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	var user model.Register
+	var user model.RegisterRequest
 	err := utils.ParseBody(r.Body, &user)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, err, "Fail to parse body")
@@ -67,7 +67,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, http.StatusInternalServerError, err, "Fail to create user")
 		return
 	}
-	utils.RespondJSON(w, http.StatusCreated, map[string]string{"token": jwtToken})
+	utils.RespondJSON(w, http.StatusCreated, map[string]string{"token": jwtToken,
+		"emp_id": empID})
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -120,4 +121,75 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "logged out successfully"})
+}
+
+func CreateEmployee(w http.ResponseWriter, r *http.Request) {
+	var user model.Employee1Request
+
+	if err := utils.ParseBody(r.Body, &user); err != nil {
+		utils.RespondError(w, http.StatusBadRequest, err, "failed to register")
+		return
+	}
+
+	if errs := utils.ValidateStruct(user); errs != nil {
+		utils.RespondValidationError(w, errs)
+		return
+	}
+	if !model.Role(user.Role).Iscorrect() {
+		utils.RespondError(w, http.StatusBadRequest, nil, "fail role entered")
+		return
+	}
+	exists, err := dbhelper.UserExist(user.Email)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "database error")
+		return
+	}
+	if exists {
+		utils.RespondError(w, http.StatusBadRequest, nil, "user already exists")
+		return
+	}
+
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "hashing failed")
+		return
+	}
+
+	var (
+		empID     string
+		sessionID string
+	)
+
+	// Transaction
+	err = database.Tx(func(tx *sqlx.Tx) error {
+		empID, err = dbhelper.CreateEmployee(
+			tx,
+			user.Name,
+			user.Email,
+			user.Role,
+			user.PhoneNo,
+			hashedPassword,
+		)
+		if err != nil {
+			return err
+		}
+
+		sessionID, err = dbhelper.CreateSession(tx, empID)
+		return err
+	})
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "failed to create user")
+		return
+	}
+
+	jwtToken, err := utils.GenerateJWT(empID, sessionID)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "failed to generate token")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, map[string]string{
+		"jwt":   jwtToken,
+		"empID": empID,
+	})
 }

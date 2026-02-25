@@ -65,3 +65,13 @@ func LogoutSession(sessionID string) error {
 	_, err := database.DB.Exec(sql, sessionID)
 	return err
 }
+func CreateEmployee(tx *sqlx.Tx, name, email, role, phoneNo, password string) (string, error) {
+	sql := `
+INSERT INTO employee (name, email, role, phone_no, password_hash)
+VALUES ($1, trim(lower($2)), $3, $4, $5)
+RETURNING id
+`
+	var id string
+	err := tx.Get(&id, sql, name, email, role, phoneNo, password)
+	return id, err
+}
