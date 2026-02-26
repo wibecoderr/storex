@@ -114,10 +114,10 @@ func AssignAsset(assetID, empID string) error {
 		var status string
 		err := tx.Get(&status, sql, assetID)
 		if err != nil {
-			return fmt.Errorf("asset not found or archived: %w", err)
+			return err
 		}
 		if status == "assigned" {
-			return fmt.Errorf("asset %s already assigned to %s", assetID, empID)
+			return err
 		}
 
 		sql = `UPDATE assets SET emp_id = $1, status = 'assigned' WHERE id = $2 AND archived_at IS NULL`
@@ -141,12 +141,12 @@ func ReturnAsset(assetID, note string) error {
 		if err != nil {
 			return fmt.Errorf("asset not found or not currently assigned: %w", err)
 		}
-
+		// update thre empid
 		_, err = tx.Exec(`UPDATE assets SET emp_id = NULL, status = 'available' WHERE id = $1 AND archived_at IS NULL`, assetID)
 		if err != nil {
 			return err
 		}
-
+		// for assest histtory maintaence
 		_, err = tx.Exec(`
 			INSERT INTO asset_history (type, asset_id, assigned_to, assigned_on, returned_on, return_status)
 			VALUES ('available', $1, $2, now(), now(), $3)`,
@@ -156,12 +156,13 @@ func ReturnAsset(assetID, note string) error {
 }
 
 func RemoveAsset(assetID string) error {
-	//  todo checked if remove only when procuct is not assigned
+	// always check if user is assiged if current -> assiogned -> no development
 	sql := `UPDATE assets SET archived_at = now() WHERE id = $1 AND archived_at IS NULL and status !='assigned'`
 	_, err := database.DB.Exec(sql, assetID)
 	return err
 }
 func ListAssetsByEmployee(empID string) ([]model.Asset, int, error) {
+	// commplete list of all asses under employee possession
 	var assets []model.Asset
 	err := database.DB.Select(&assets, `SELECT * FROM assets WHERE emp_id = $1 AND archived_at IS NULL ORDER BY type`, empID)
 	if err != nil {
@@ -171,6 +172,7 @@ func ListAssetsByEmployee(empID string) ([]model.Asset, int, error) {
 }
 
 func CheckStatus(assestId string) bool {
+	// for checking whether assigned or not for differnt usage
 	sql := `select status from assets where id = $1 and   archived_at IS NULL`
 	var status string
 	err := database.DB.Get(&status, sql, assestId)

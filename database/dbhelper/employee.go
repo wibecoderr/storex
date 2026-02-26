@@ -7,6 +7,7 @@ import (
 )
 
 func AddEmployee(tx *sqlx.Tx, name, email, role, phoneNo, password string) (string, error) {
+	// adding employees into table
 	sql := `INSERT INTO employee (name, email, role, phone_no , password_hash)
             VALUES ($1, lower(trim($2)), $3, $4, $5)
             RETURNING id`
@@ -16,6 +17,7 @@ func AddEmployee(tx *sqlx.Tx, name, email, role, phoneNo, password string) (stri
 }
 
 func UserExist(email string) (bool, error) {
+	// for checking at time of creating admin or user whether user have id or not
 	sql := `SELECT count(*) > 0 FROM employee 
             WHERE email = lower(trim($1)) AND archived_at IS NULL`
 	var exists bool
@@ -24,19 +26,13 @@ func UserExist(email string) (bool, error) {
 }
 
 func GetEmployeeByEmail(email string) (model.Getuser, error) {
+	// for login process
 	sql := `select id , password_hash from employee where email = lower(trim($1))`
 	var detail model.Getuser
 	err := database.DB.Get(&detail, sql, email)
 	return detail, err
 }
 
-func ArchiveEmployee(id string) error {
-	sql := ` UPDATE employee
-SET archived_at = NOW() WHERE id = $1
-and archived_at IS NULL`
-	_, err := database.DB.Exec(sql, id)
-	return err
-}
 func CreateSession(tx *sqlx.Tx, empID string) (string, error) {
 	sql := `INSERT INTO user_sessions (emp_id) VALUES ($1) RETURNING id`
 	var sessionID string
@@ -44,11 +40,6 @@ func CreateSession(tx *sqlx.Tx, empID string) (string, error) {
 	return sessionID, err
 }
 
-func DeleteSession(sessionID string) error {
-	sql := `DELETE FROM user_sessions WHERE emp_id = $1`
-	_, err := database.DB.Exec(sql, sessionID)
-	return err
-}
 func GetUserIDBySession(sessionID string) (string, error) {
 	var userID string
 	err := database.DB.Get(&userID, `SELECT emp_id FROM user_sessions WHERE id = $1 AND archived_at IS NULL`, sessionID)
@@ -74,4 +65,16 @@ RETURNING id
 	var id string
 	err := tx.Get(&id, sql, name, email, role, phoneNo, password)
 	return id, err
+}
+func DeleteSession(sessionID string) error {
+	sql := `DELETE FROM user_sessions WHERE emp_id = $1`
+	_, err := database.DB.Exec(sql, sessionID)
+	return err
+}
+func ArchiveEmployee(id string) error {
+	sql := ` UPDATE employee
+SET archived_at = NOW() WHERE id = $1
+and archived_at IS NULL`
+	_, err := database.DB.Exec(sql, id)
+	return err
 }
