@@ -1,47 +1,39 @@
-Authentication
 
-Register
-Create your account by providing your name, email, password, phone number, and role. Once registered, you’ll receive an authentication token that you’ll use for future requests.
 
-Login
-Enter your email and password to access your account. If the credentials are correct, a new authentication token will be generated for you.
+### 🔐 Auth
 
-Logout
-Logs you out of the system. After logging out, your current token will no longer be valid.
+**Register** → Creates your account. You send your name, email, password, phone and role. You get back a token to use for future requests.
 
-Employee Management
+**Login** → You send email + password. If correct, you get a token back.
 
-Create Employee (Admin Only)
-Admins can create employee accounts directly instead of requiring employees to self-register.
+**Logout** → Kills your current session. Your token stops working after this.
 
-List Employees with Asset Count
-View all employees along with the number of assets currently assigned to them. You can filter results by asset type (e.g., laptop) or asset status (e.g., assigned). If no filters are applied, it displays the total assets per employee.
+---
 
-Archive Employee (Admin Only)
-Marks an employee as inactive (for example, if they leave the company). The employee is not permanently deleted — their data remains in the system.
+### 👥 Employee
 
-My Assets
-Allows an employee to see all assets currently assigned to them. The system identifies the employee automatically using their authentication token.
+**Create Employee** *(Admin only)* → Admin creates a new employee account manually instead of them self-registering.
 
-Asset Management
+**List Employees with Asset Count** → Shows all employees with how many assets they currently have. You can filter by asset type (like laptop) or status (like assigned). If you don't filter, it shows total assets for everyone.
 
-Create Asset (Admin Only)
-Adds a new device to the system. Basic details like brand, model, serial number, and type are required. Depending on the asset type, additional specifications must be provided — for example, RAM and storage for laptops, or DPI for a mouse.
+**Archive Employee** *(Admin only)* → Fires an employee from the system. They don't get deleted permanently, just marked as inactive.
 
-List All Assets
-Displays all company assets. Supports searching, filtering (by type, status, or owner), and pagination. It also provides dashboard statistics such as how many assets are available, assigned, damaged, etc.
+**My Assets** → An employee can see which assets are currently assigned to them. Uses their token to figure out who they are automatically.
 
-Get One Asset
-Retrieves detailed information about a specific asset, including type-specific specifications like processor, RAM, and storage for laptops.
+---
 
-Assign Asset (Admin Only)
-Assigns an asset to an employee. The asset status changes to assigned, and the action is recorded in the asset history.
+### 📦 Assets
 
-Return Asset (Admin Only)
-Marks an asset as returned. Its status changes back to available, and a return record is saved in the history along with an optional note.
+**Create Asset** *(Admin only)* → Adds a new device to the system. You provide brand, model, serial number, type and depending on the type you also fill in extra details like RAM for laptop or DPI for mouse.
 
-Update Asset (Admin Only)
-Allows modification of asset details such as brand, model, warranty dates, or technical specifications.
+**List All Assets** → Shows all assets in the company. You can search, filter by type/status/owner and paginate. Also returns a dashboard count showing how many are available, assigned, damaged etc.
 
-Delete Asset (Admin Only)
-Soft-deletes an asset from the system. The asset must not be currently assigned. The data remains in the database but is hidden from active listings.
+**Get One Asset** → Fetches full details of a single asset including its type-specific specs like processor, RAM, storage for a laptop.
+
+**Assign Asset** *(Admin only)* → Links an asset to an employee. Asset status changes to assigned. A record is saved in history.
+
+**Return Asset** *(Admin only)* → Takes an asset back from an employee. Asset goes back to available. A return record is saved in history with a note.
+
+**Update Asset** *(Admin only)* → Edit the details of an existing asset like brand, model, warranty dates or laptop specs.
+
+**Delete Asset** *(Admin only)* → Removes an asset from the system. Asset must not be currently assigned to anyone. It's a soft delete so the data is still in the database just hidden.
