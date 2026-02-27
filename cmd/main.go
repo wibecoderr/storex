@@ -3,22 +3,25 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/wibecoderr/storex/database"
-	"github.com/wibecoderr/storex/handler"
-	"github.com/wibecoderr/storex/middleware"
+	"github.com/wibecoderr/storex/server"
 )
 
 func main() {
 	err := database.ConnectAndMigrate(
-		"localhost",
-		"5433",
-		"postgres",
-		"local",
-		"local",
+		/*
+			DB_DATABASE=postgres;DB_HOST=localhost;DB_PASSWORD=local;DB_PORT=5433;DB_USER=local
+		*/
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_DATABASE"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
 		database.SSLModeDisable,
 	)
 
@@ -29,29 +32,7 @@ func main() {
 	defer database.ShutdownDatabase()
 
 	r := chi.NewRouter()
-
-	r.Post("/register", handler.RegisterUser) // workign correctly
-	r.Post("/login", handler.LoginUser)       // working
-
-	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware)
-		r.Post("/logout", handler.LogoutUser)  // working
-		r.Get("/assets", handler.DisplayAsset) // required p
-		r.Get("/assets/{id}", handler.GetAssetByID)
-		r.Get("/employees", handler.ListAssetsByEmployee) //working
-	})
-
-	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware)
-		r.Use(middleware.RoleMiddleware("admin"))
-		r.Post("/register/employee", handler.CreateEmployee) //working
-		r.Post("/assets", handler.CreateAsset)               //working
-		r.Get("/assets/{id}", handler.ListAssetsByEmployeeAdmin)
-		r.Post("/assets/return/{id}", handler.ReturnAssest) // working
-		r.Post("/assets/assign", handler.AssignAsset)       // working
-		r.Delete("/assets/{id}", handler.DeleteAsset)       // working
-	})
-
+	server.SetUpRoutes(r)
 	log.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

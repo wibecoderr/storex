@@ -161,9 +161,9 @@ func RemoveAsset(assetID string) error {
 	_, err := database.DB.Exec(sql, assetID)
 	return err
 }
-func ListAssetsByEmployee(empID string) ([]model.Asset, int, error) {
+func ListAssetsByEmployee(empID string) ([]model.AssetRequest, int, error) {
 	// commplete list of all asses under employee possession
-	var assets []model.Asset
+	var assets []model.AssetRequest
 	err := database.DB.Select(&assets, `SELECT * FROM assets WHERE emp_id = $1 AND archived_at IS NULL ORDER BY type`, empID)
 	if err != nil {
 		return nil, 0, err
@@ -180,4 +180,68 @@ func CheckStatus(assestId string) bool {
 		return false
 	}
 	return status != "assigned"
+}
+
+func UpdateAsset(assetId string, req model.UpdateAssetRequest) (string, error) {
+	err := database.Tx(func(tx *sqlx.Tx) error {
+		sql := `
+        UPDATE  assets
+        SET  brand = $2,
+             model = $3,
+            serial_no = $4,
+             type = $5,
+            owner = $6,
+            purchased_at = $7,
+            warranty_start = $8,
+             warranty_end = $9,
+            note = $10
+           WHERE id = $1
+          AND archived_at IS NULL`
+
+		_, err := tx.Exec(sql, assetId, req.Brand, req.Model, req.Serial, req.Type, req.Owner, req.PurchasedAt, req.WarrantyStart, req.WarrantyEnd, req.Note)
+		if err != nil {
+			return err
+		}
+
+		switch req.Type {
+		case "laptop":
+			sql = `UPDATE laptop 
+            SET processor = $2, ram = $3, storage = $4, os = $5, charger = $6 
+            WHERE asset_id = $1`
+			_, err = tx.Exec(sql, assetId, req.Laptop.Processor, req.Laptop.Ram, req.Laptop.Storage, req.Laptop.Os, req.Laptop.Charger)
+			if err != nil {
+				return err
+			}
+		case "mouse":
+			sql = `update mouse 
+			set dpi = $2 , is_wireless= $3 where asset_id=$1`
+			_, err := tx.Exec(sql, assetId, req.Mouse.Dpi, req.Mouse.IsWireless)
+			if err != nil {
+				return err
+			}
+		case "mobile":
+			sql := `update mobile
+			set os = $2 , ram = $3 , storage = $4 , charger = $5
+			where asset_id = $1`
+
+			_, err := tx.Exec(sql, assetId, req.Mobile.Os, req.Mobile.Ram, req.Mobile.Storage, req.Mobile.Charger)
+			if err != nil {
+				return err
+			}
+		case "hardware":
+			sql = `update hardware
+set storage = $2 where asset_id = $1 `
+			_, err := tx.Exec(sql, assetId, req.Hardware.Storage)
+			if err != nil {
+				return err
+			}
+
+		}
+		return err
+
+	})
+	if err != nil {
+		return "", err
+	}
+	return "", nil
 }

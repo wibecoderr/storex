@@ -222,3 +222,25 @@ func ReturnAssest(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{"message": "asset returned successfully"})
 }
+func UpdateAsset(w http.ResponseWriter, r *http.Request) {
+	var device model.UpdateAssetRequest
+	id := chi.URLParam(r, "id")
+	errs := utils.ParseBody(r.Body, &device)
+	if errs != nil {
+		utils.RespondError(w, http.StatusBadRequest, errs, "fail to parse body ")
+		return
+	}
+	if errs := utils.ValidateStruct(device); errs != nil {
+		utils.RespondValidationError(w, errs)
+		return
+	}
+	_, err := dbhelper.UpdateAsset(id, device)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "fail to enter data")
+		return
+	}
+	utils.RespondJSON(w, http.StatusOK, map[string]string{
+		"message": "updation successful for  ",
+		"id":      id,
+	})
+}

@@ -44,7 +44,7 @@ type Getuser struct {
 	Password_hash string `db:"password_hash"`
 }
 
-type Asset struct {
+type AssetRequest struct {
 	ID            string     `db:"id"`
 	EmpID         *string    `db:"emp_id"`
 	Brand         string     `db:"brand"`
@@ -60,7 +60,7 @@ type Asset struct {
 	Note          *string    `db:"note"`
 }
 type AssetDetail struct {
-	Asset    Asset
+	Asset    AssetRequest
 	Laptop   *Laptop
 	Mouse    *Mouse
 	Keyboard *Keyboard
@@ -182,4 +182,21 @@ type ReturnRequest struct {
 	ReturnedOn     time.Time `db:"returned_on" json:"returned_on"`
 	ReturnedStatus string    `db:"returned_status" json:"returned_status"`
 	Note           string    `db:"note" json:"note"`
+}
+
+type UpdateAssetRequest struct {
+	Brand         string     `json:"brand" validate:"required"`
+	Model         string     `json:"model" validate:"required"`
+	Serial        string     `json:"serial" validate:"required"`
+	Type          string     `json:"type" validate:"required"`
+	Owner         string     `json:"owner" validate:"required"`
+	PurchasedAt   time.Time  `json:"purchased_at" validate:"required"`
+	WarrantyStart *time.Time `json:"warranty_start"`
+	WarrantyEnd   *time.Time `json:"warranty_end"`
+	Note          *string    `json:"note"`
+	Laptop        *Laptop    `json:"laptop,omitempty"`
+	Mouse         *Mouse     `json:"mouse,omitempty"`
+	Keyboard      *Keyboard  `json:"keyboard,omitempty"`
+	Mobile        *Mobile    `json:"mobile,omitempty"`
+	Hardware      *Hardware  `json:"hardware,omitempty"`
 }
