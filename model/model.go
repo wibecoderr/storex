@@ -4,17 +4,6 @@ import (
 	"time"
 )
 
-type Employee struct {
-	ID           int       `db:"id"`
-	Name         string    `db:"name"`
-	Email        string    `db:"email"`
-	Password     string    `db:"password"`
-	Role         string    `db:"role"`
-	PhoneNo      string    `db:"phone_no"`
-	PasswordHash string    `db:"password_hash"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
-}
 type Role string
 
 const (
@@ -205,15 +194,12 @@ type DashboardCount struct {
 	WaitingForRepair int `db:"waiting_for_repair" json:"waiting_for_repair"`
 	Damaged          int `db:"damaged"   json:"damaged"`
 }
-type EmployeeListRequest struct {
-	AssetType   *string `json:"asset_type"`
-	AssetStatus *string `json:"asset_status"`
-}
 
 type EmployeeListResponse struct {
-	ID    int    `json:"id"    db:"id"`
-	Name  string `json:"name"  db:"name"`
-	Email string `json:"email" db:"email"`
-	Phone string `json:"phone" db:"phone_no"`
-	Role  string `json:"role"  db:"role"`
+	ID         int    `json:"id"    db:"id"`
+	Name       string `json:"name"  db:"name"`
+	Email      string `json:"email" db:"email"`
+	Phone      string `json:"phone" db:"phone_no"`
+	Role       string `json:"role"  db:"role"`
+	Assetcount int    `json:"asset_count" db:"asset_count"`
 }

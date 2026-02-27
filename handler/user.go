@@ -206,16 +206,17 @@ func ArchieveUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEmpoloyee(w http.ResponseWriter, r *http.Request) {
-	assetType := chi.URLParam(r, "type")
-	status := chi.URLParam(r, "status")
+	assetType := r.URL.Query().Get("type")
+	status := r.URL.Query().Get("status")
 
-	_, err := dbhelper.ListEmployee(assetType, status)
+	employees, err := dbhelper.ListEmployee(assetType, status)
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, err, "fail to fetch data")
 		return
 	}
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "success",
+		"data":    employees,
 	})
 
 }

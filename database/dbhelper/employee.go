@@ -1,6 +1,8 @@
 package dbhelper
 
 import (
+	"errors"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/wibecoderr/storex/database"
 	"github.com/wibecoderr/storex/model"
@@ -71,12 +73,28 @@ func DeleteSession(sessionID string) error {
 	_, err := database.DB.Exec(sql, sessionID)
 	return err
 }
-func ArchiveEmployee(id string) error {
-	sql := ` UPDATE employee
-SET archived_at = NOW() WHERE id = $1
-and archived_at IS NULL`
-	_, err := database.DB.Exec(sql, id)
-	return err
+func ArchiveEmployee(empID string) error {
+	return database.Tx(func(tx *sqlx.Tx) error {
+
+		sql := `
+			UPDATE employee
+			SET archived_at = NOW()
+			WHERE id = $1
+			AND archived_at IS NULL
+		`
+
+		result, err := tx.Exec(sql, empID)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.Exec(`DELETE FROM user_sessions WHERE emp_id = $1`, empID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 func ListEmployee(Type, status string) ([]model.EmployeeListResponse, error) {
 	sql := `SELECT
@@ -89,8 +107,8 @@ func ListEmployee(Type, status string) ([]model.EmployeeListResponse, error) {
 FROM employee e
 LEFT JOIN assets a ON a.emp_id = e.id
     AND a.archived_at IS NULL
-    AND (a.type = :asset_type OR :asset_type IS NULL)
-    AND (a.status = :asset_status OR :asset_status IS NULL)
+    AND ($1 = '' OR a.type = $1)
+AND ($2 = '' OR a.status = $2)
 WHERE e.archived_at IS NULL
 GROUP BY e.id, e.name, e.email, e.phone_no, e.role
 ORDER BY e.name;`
