@@ -16,6 +16,8 @@ func SetUpRoutes(r chi.Router) {
 		r.Get("/assets", handler.DisplayAsset)
 		r.Get("/assets/{id}", handler.GetAssetByID)
 		r.Get("/employees", handler.ListAssetsByEmployee)
+		r.Get("/employees/{type}/{status}", handler.GetEmpoloyee)
+
 	})
 
 	r.Group(func(r chi.Router) {
@@ -27,6 +29,7 @@ func SetUpRoutes(r chi.Router) {
 		r.Get("/assets/{id}", handler.ListAssetsByEmployeeAdmin)
 		r.Post("/assets/return/{id}", handler.ReturnAssest)
 		r.Post("/assets/assign", handler.AssignAsset)
+		r.Delete("user/{id}", handler.ArchieveUser)
 		r.Delete("/assets/{id}", handler.DeleteAsset)
 	})
 }

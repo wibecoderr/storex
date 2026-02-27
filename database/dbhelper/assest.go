@@ -94,19 +94,24 @@ func GetAssetByID(id string) (model.AssetDetail, error) {
 	return details, err
 }
 
-func ListAssets(limit, offset int) ([]model.DisplayAssetResponse, error) {
+func ListAssets(limit, offset int, typeStr, statusStr, ownerStr, searchStr string) ([]model.DisplayAssetResponse, error) {
 	sql := `SELECT a.brand, a.model, a.serial_no, a.type, a.status,
                    e.name as employee_name, e.id as employee_id
             FROM assets a
             LEFT JOIN employee e ON e.id = a.emp_id
             WHERE a.archived_at IS NULL
+            AND ($1 = '' OR a.type = $1)
+            AND ($2 = '' OR a.status = $2)
+            AND ($3 = '' OR a.owner = $3)
+            AND ($4 = '' OR a.brand ILIKE '%' || $4 || '%' 
+                         OR a.model ILIKE '%' || $4 || '%' 
+                         OR a.serial_no ILIKE '%' || $4 || '%')
             ORDER BY a.type
-            LIMIT $1 OFFSET $2`
+            LIMIT $5 OFFSET $6`
 	var devices []model.DisplayAssetResponse
-	err := database.DB.Select(&devices, sql, limit, offset)
+	err := database.DB.Select(&devices, sql, typeStr, statusStr, ownerStr, searchStr, limit, offset)
 	return devices, err
 }
-
 func AssignAsset(assetID, empID string) error {
 	return database.Tx(func(tx *sqlx.Tx) error {
 
@@ -117,7 +122,8 @@ func AssignAsset(assetID, empID string) error {
 			return err
 		}
 		if status == "assigned" {
-			return err
+			return fmt.Errorf("asset already assigned")
+
 		}
 
 		sql = `UPDATE assets SET emp_id = $1, status = 'assigned' WHERE id = $2 AND archived_at IS NULL`
@@ -244,4 +250,19 @@ set storage = $2 where asset_id = $1 `
 		return "", err
 	}
 	return "", nil
+}
+func DisplayCount() (model.DashboardCount, error) {
+	sql := `SELECT
+		COUNT(*) as total,
+		COUNT(*) FILTER (WHERE status = 'available') as available,
+		COUNT(*) FILTER (WHERE status = 'assigned') as assigned,
+		COUNT(*) FILTER (WHERE status = 'in_service') as in_service,
+		COUNT(*) FILTER (WHERE status = 'for_repair') as waiting_for_repair,
+		COUNT(*) FILTER (WHERE status = 'damaged') as damaged
+	FROM assets
+	WHERE archived_at IS NULL`
+
+	var count model.DashboardCount
+	err := database.DB.Get(&count, sql)
+	return count, err
 }

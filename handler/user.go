@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jmoiron/sqlx"
 	"github.com/wibecoderr/storex"
 	"github.com/wibecoderr/storex/database"
@@ -192,4 +193,29 @@ func CreateEmployee(w http.ResponseWriter, r *http.Request) {
 		"jwt":   jwtToken,
 		"empID": empID,
 	})
+}
+func ArchieveUser(w http.ResponseWriter, r *http.Request) {
+	empId := chi.URLParam(r, "id")
+	err := dbhelper.ArchiveEmployee(empId)
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, err, "wrong id ")
+		return
+	}
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "success"})
+
+}
+
+func GetEmpoloyee(w http.ResponseWriter, r *http.Request) {
+	assetType := chi.URLParam(r, "type")
+	status := chi.URLParam(r, "status")
+
+	_, err := dbhelper.ListEmployee(assetType, status)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "fail to fetch data")
+		return
+	}
+	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "success",
+	})
+
 }

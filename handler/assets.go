@@ -186,13 +186,28 @@ func DisplayAsset(w http.ResponseWriter, r *http.Request) {
 
 	offset := (p - 1) * l
 
-	Devices, err := dbhelper.ListAssets(l, offset)
+	devices, err := dbhelper.ListAssets(
+		l,
+		offset,
+		r.URL.Query().Get("type"),
+		r.URL.Query().Get("status"),
+		r.URL.Query().Get("owner"),
+		r.URL.Query().Get("search"),
+	)
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, err, "failed to get assets")
 		return
 	}
+
+	counts, err := dbhelper.DisplayCount()
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err, "failed to get dashboard counts")
+		return
+	}
+
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"assets": Devices,
+		"assets":    devices,
+		"dashboard": counts,
 	})
 }
 

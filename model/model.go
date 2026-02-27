@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Employee struct {
 	ID           int       `db:"id"`
@@ -159,12 +161,7 @@ type AssignAssetRequest struct {
 type DeleteAssetRequest struct {
 	AssetID string `json:"asset_id" validate:"required"`
 }
-type DisplayRequest struct {
-	Model string `json:"model" validate:"required"`
-	TYpe  string `json:"type" validate:"required"`
-	EmpId string `json:"emp_id" validate:"required"`
-	owner string `json:"owner" validate:"required"`
-}
+
 type DisplayAssetResponse struct {
 	Brand    string  `db:"brand" json:"brand"`
 	Model    string  `db:"model" json:"model"`
@@ -199,4 +196,24 @@ type UpdateAssetRequest struct {
 	Keyboard      *Keyboard  `json:"keyboard,omitempty"`
 	Mobile        *Mobile    `json:"mobile,omitempty"`
 	Hardware      *Hardware  `json:"hardware,omitempty"`
+}
+type DashboardCount struct {
+	Total            int `db:"total"  json:"total"`
+	Available        int `db:"available" json:"available"`
+	Assigned         int `db:"assigned"   json:"assigned"`
+	InService        int `db:"in_service" json:"in_service"`
+	WaitingForRepair int `db:"waiting_for_repair" json:"waiting_for_repair"`
+	Damaged          int `db:"damaged"   json:"damaged"`
+}
+type EmployeeListRequest struct {
+	AssetType   *string `json:"asset_type"`
+	AssetStatus *string `json:"asset_status"`
+}
+
+type EmployeeListResponse struct {
+	ID    int    `json:"id"    db:"id"`
+	Name  string `json:"name"  db:"name"`
+	Email string `json:"email" db:"email"`
+	Phone string `json:"phone" db:"phone_no"`
+	Role  string `json:"role"  db:"role"`
 }

@@ -78,3 +78,23 @@ and archived_at IS NULL`
 	_, err := database.DB.Exec(sql, id)
 	return err
 }
+func ListEmployee(Type, status string) ([]model.EmployeeListResponse, error) {
+	sql := `SELECT
+    e.id,
+    e.name,
+    e.email,
+    e.phone_no,
+    e.role,
+    COUNT(a.id) AS asset_count
+FROM employee e
+LEFT JOIN assets a ON a.emp_id = e.id
+    AND a.archived_at IS NULL
+    AND (a.type = :asset_type OR :asset_type IS NULL)
+    AND (a.status = :asset_status OR :asset_status IS NULL)
+WHERE e.archived_at IS NULL
+GROUP BY e.id, e.name, e.email, e.phone_no, e.role
+ORDER BY e.name;`
+	var user []model.EmployeeListResponse
+	err := database.DB.Select(&user, sql, Type, status)
+	return user, err
+}
