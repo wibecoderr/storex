@@ -1,4 +1,37 @@
+# StoreX
 
+StoreX is a simple **RESTful Inventory Management System** built with **Go** for tracking and managing inventory for office or school use.
+
+---
+
+## 🚀 Features
+
+- 🗃️ CRUD APIs for inventory items
+- 🚦 Structured handlers and middleware
+- 📦 Database storage using SQL
+- 📋 Basic validation and logging
+
+---
+
+## 🧰 Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Language  | Go         |
+| Router    | chi        |
+| Validator | go-playground/validator |
+| Logger    | logrus     |
+| Database  | PostgreSQL / SQL supported by `sqlx` |
+
+---
+
+## 📦 Installation
+
+### 1. Clone the repo
+
+Here's a plain English explanation of every API:
+
+---
 
 ### 🔐 Auth
 
@@ -37,3 +70,7 @@
 **Update Asset** *(Admin only)* → Edit the details of an existing asset like brand, model, warranty dates or laptop specs.
 
 **Delete Asset** *(Admin only)* → Removes an asset from the system. Asset must not be currently assigned to anyone. It's a soft delete so the data is still in the database just hidden.
+
+```sh
+git clone https://github.com/wibecoderr/storex.git
+cd storex
