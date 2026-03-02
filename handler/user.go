@@ -195,8 +195,15 @@ func CreateEmployee(w http.ResponseWriter, r *http.Request) {
 	})
 }
 func ArchieveUser(w http.ResponseWriter, r *http.Request) {
+	// check if user already have assigned device
+
 	empId := chi.URLParam(r, "id")
-	err := dbhelper.ArchiveEmployee(empId)
+	_, count, err := dbhelper.ListAssetsByEmployee(empId)
+	if err != nil || count > 0 {
+		utils.RespondError(w, http.StatusInternalServerError, err, "asset is assigned to particular user kindly unassign first")
+		return
+	}
+	err = dbhelper.ArchiveEmployee(empId)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, err, "wrong id ")
 		return

@@ -241,7 +241,11 @@ set storage = $2 where asset_id = $1 `
 			if err != nil {
 				return err
 			}
-
+		case "keyboard":
+			sql := ` update keyboard
+set layout = $2 where asset_id= $1`
+			_, err := tx.Exec(sql, assetId, req.Keyboard.Layout)
+			return err
 		}
 		return err
 

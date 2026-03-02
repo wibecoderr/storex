@@ -23,6 +23,7 @@ func main() {
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		database.SSLModeDisable,
+		
 	)
 
 	// history dashboard logout return assest  -- api , enum in go ,

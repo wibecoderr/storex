@@ -1,8 +1,6 @@
 package dbhelper
 
 import (
-	"errors"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/wibecoderr/storex/database"
 	"github.com/wibecoderr/storex/model"
@@ -83,7 +81,7 @@ func ArchiveEmployee(empID string) error {
 			AND archived_at IS NULL
 		`
 
-		result, err := tx.Exec(sql, empID)
+		_, err := tx.Exec(sql, empID)
 		if err != nil {
 			return err
 		}
