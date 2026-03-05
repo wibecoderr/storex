@@ -142,7 +142,7 @@ func CreateEmployee(w http.ResponseWriter, r *http.Request) {
 		utils.RespondValidationError(w, errs)
 		return
 	}
-	if !model.Role(user.Role).Iscorrect() {
+	if !model.Role(user.Role).IscorrectAdmin() {
 		utils.RespondError(w, http.StatusBadRequest, nil, "fail role entered")
 		return
 	}

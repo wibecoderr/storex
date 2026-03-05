@@ -24,9 +24,16 @@ type Employee1Request struct {
 
 func (r Role) Iscorrect() bool {
 	switch r {
-	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer, RoleAdmin:
+	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer:
 		return true
 
+	}
+	return false
+}
+func (r Role) IscorrectAdmin() bool {
+	switch r {
+	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer, RoleAdmin:
+		return true
 	}
 	return false
 }
