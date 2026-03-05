@@ -14,6 +14,7 @@ import (
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var user model.RegisterRequest
+
 	err := utils.ParseBody(r.Body, &user)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, err, "Fail to parse body")
@@ -23,6 +24,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		utils.RespondValidationError(w, errs)
 		return
 	}
+	if user.Role == "admin" {
+		utils.RespondError(w, http.StatusForbidden, nil, "cannot self-register as admin")
+		return
+	}
+
 	// check if user exist
 	exists, err := dbhelper.UserExist(user.Email)
 	if err != nil {

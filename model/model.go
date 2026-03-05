@@ -11,6 +11,7 @@ const (
 	RoleEmployee   Role = "employee"
 	RoleManager    Role = "manager"
 	RoleFreelancer Role = "freelancer"
+	RoleAdmin      Role = "admin"
 )
 
 type Employee1Request struct {
@@ -23,7 +24,7 @@ type Employee1Request struct {
 
 func (r Role) Iscorrect() bool {
 	switch r {
-	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer:
+	case RoleIntern, RoleEmployee, RoleManager, RoleFreelancer, RoleAdmin:
 		return true
 
 	}
@@ -99,7 +100,7 @@ type Error struct {
 type RegisterRequest struct {
 	Name     string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
-	Role     string `json:"role"`
+	Role     string `json:"role" validate:"required"`
 	PhoneNo  string `json:"phone_no" validate:"required,min=10,max=10"`
 	Password string `json:"password" validate:"required"`
 }
