@@ -93,6 +93,8 @@ type Hardware struct {
 
 type Keyboard struct {
 	Layout string `db:"layout"`
+
+	//npsnv
 }
 
 type UserCxt struct {

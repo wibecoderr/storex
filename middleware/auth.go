@@ -39,7 +39,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// verify session exists in DB
+		// verify session exists in DB   d
 		dbUserID, err := dbhelper.GetUserIDBySession(sessionID)
 		if err != nil || dbUserID != userID {
 			utils.RespondError(w, http.StatusUnauthorized, nil, "session not found or expired")

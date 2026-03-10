@@ -45,7 +45,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, http.StatusBadRequest, nil, "Fail to hash password")
 		return
 	}
-	// add employee
+	// add employee svwe
 	var (
 		jwtToken  string
 		empID     string
