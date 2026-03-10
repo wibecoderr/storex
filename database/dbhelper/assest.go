@@ -269,4 +269,5 @@ func DisplayCount() (model.DashboardCount, error) {
 	var count model.DashboardCount
 	err := database.DB.Get(&count, sql)
 	return count, err
+	fmt.Println("hello")
 }
