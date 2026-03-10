@@ -20,6 +20,8 @@ const (
 	SSLModeDisable SSLMode = "disable"
 )
 
+//.
+
 func ConnectAndMigrate(host, port, databaseName, user, password string, sslMode SSLMode) error {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, databaseName, sslMode)
 	var err error

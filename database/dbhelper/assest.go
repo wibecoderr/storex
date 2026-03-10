@@ -177,6 +177,7 @@ func ListAssetsByEmployee(empID string) ([]model.AssetRequest, int, error) {
 	return assets, len(assets), nil
 }
 
+// ..
 func CheckStatus(assestId string) bool {
 	// for checking whether assigned or not for differnt usage
 	sql := `select status from assets where id = $1 and   archived_at IS NULL`

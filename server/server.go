@@ -19,6 +19,7 @@ func SetUpRoutes(r chi.Router) {
 		r.Get("/employees", handler.GetEmpoloyee)
 
 	})
+	//..
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)

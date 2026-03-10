@@ -211,7 +211,7 @@ func DisplayAsset(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// note: typo in function name is intentional to match route registration - dont fix
+// note: typo in function name is intentional to match route registration - dont fixvwrvw
 func ReturnAssest(w http.ResponseWriter, r *http.Request) {
 	var device model.ReturnRequest
 

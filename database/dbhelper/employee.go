@@ -65,7 +65,7 @@ RETURNING id
 	var id string
 	err := tx.Get(&id, sql, name, email, role, phoneNo, password)
 	return id, err
-}
+} //hpw
 func DeleteSession(sessionID string) error {
 	sql := `DELETE FROM user_sessions WHERE emp_id = $1`
 	_, err := database.DB.Exec(sql, sessionID)
