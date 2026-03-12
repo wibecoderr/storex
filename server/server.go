@@ -7,8 +7,12 @@ import (
 )
 
 func SetUpRoutes(r chi.Router) {
+	handler.InitFirebase()
 	r.Post("/register", handler.RegisterUser)
 	r.Post("/login", handler.LoginUser)
+	r.Post("/auth/google", handler.FirebaseLogin)
+	r.Post("/auth/github", handler.FirebaseLogin)
+	r.Post("/auth/linkedin", handler.FirebaseLogin)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
@@ -26,7 +30,7 @@ func SetUpRoutes(r chi.Router) {
 		r.Post("/register/employee", handler.CreateEmployee)
 		r.Post("/assets", handler.CreateAsset)
 		r.Put("/assets/update/{id}", handler.UpdateAsset)
-		r.Get("/assets/employee{id}", handler.ListAssetsByEmployeeAdmin)
+		r.Get("/assets/employee/{id}", handler.ListAssetsByEmployeeAdmin)
 		r.Post("/assets/return/{id}", handler.ReturnAssest)
 		r.Post("/assets/assign", handler.AssignAsset)
 		r.Delete("/user/{id}", handler.ArchieveUser)

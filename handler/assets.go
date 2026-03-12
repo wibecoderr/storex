@@ -35,7 +35,7 @@ func CreateAsset(w http.ResponseWriter, r *http.Request) {
 	// using Istype() here bc we dont unneccessary typing for type
 
 	if !model.Device(device.Type).Istype() {
-		utils.RespondError(w, http.StatusInternalServerError, nil, "wrong type for device ")
+		utils.RespondError(w, http.StatusBadRequest, nil, "wrong type for device ")
 		return
 	}
 

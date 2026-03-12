@@ -226,7 +226,7 @@ func UpdateAsset(assetId string, req model.UpdateAssetRequest) (string, error) {
 				return err
 			}
 		case "mobile":
-			sql := `update mobile
+			sql = `update mobile
 			set os = $2 , ram = $3 , storage = $4 , charger = $5
 			where asset_id = $1`
 
@@ -242,7 +242,7 @@ set storage = $2 where asset_id = $1 `
 				return err
 			}
 		case "keyboard":
-			sql := ` update keyboard
+			sql = ` update keyboard
 set layout = $2 where asset_id= $1`
 			_, err := tx.Exec(sql, assetId, req.Keyboard.Layout)
 			return err

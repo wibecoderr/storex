@@ -20,6 +20,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, http.StatusBadRequest, err, "Fail to parse body")
 		return
 	}
+
 	if errs := utils.ValidateStruct(user); errs != nil {
 		utils.RespondValidationError(w, errs)
 		return

@@ -114,3 +114,8 @@ ORDER BY e.name;`
 	err := database.DB.Select(&user, sql, Type, status)
 	return user, err
 }
+func GetEmployeeIDByEmail(email string) (string, error) {
+	var id string
+	err := database.DB.Get(&id, `SELECT id FROM employee WHERE email = lower(trim($1)) AND archived_at IS NULL`, email)
+	return id, err
+}

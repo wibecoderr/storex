@@ -23,8 +23,8 @@ func main() {
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		database.SSLModeDisable,
-		
 	)
+	// cd ~/Documents/storex && DB_HOST=localhost DB_PORT=5433 DB_DATABASE=postgres DB_USER=local DB_PASSWORD=local go run cmd/main.go
 
 	// history dashboard logout return assest  -- api , enum in go ,
 	if err != nil {

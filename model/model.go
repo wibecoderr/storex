@@ -105,11 +105,12 @@ type Error struct {
 	Message    string
 }
 type RegisterRequest struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Role     string `json:"role" validate:"required"`
-	PhoneNo  string `json:"phone_no" validate:"required,min=10,max=10"`
-	Password string `json:"password" validate:"required"`
+	Name        string `json:"name" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	Role        string `json:"role" validate:"required"`
+	PhoneNo     string `json:"phone_no" validate:"required,min=10,max=10"`
+	Password    string `json:"password" validate:"required"`
+	GoogleToken string `json:"google_Token"`
 }
 type Login struct {
 	Email    string `db:"email" validate:"required,email"`
@@ -210,4 +211,7 @@ type EmployeeListResponse struct {
 	Phone      string `json:"phone" db:"phone_no"`
 	Role       string `json:"role"  db:"role"`
 	Assetcount int    `json:"asset_count" db:"asset_count"`
+}
+type FirebaseLoginRequest struct {
+	IDToken string `json:"id_token" validate:"required"`
 }
