@@ -115,6 +115,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"token": jwtToken})
 }
+
 func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserContext(r)
 	if user == nil {
